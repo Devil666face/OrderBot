@@ -10,6 +10,8 @@ from datetime import (
 )
 
 DEBUG = True
+school_list = ["№10 (уд. Анны Ахматовой, д.18) - школа", "детский сад"]
+
 
 init_django()
 
@@ -102,6 +104,7 @@ class LineSheet(Model):
 
     @staticmethod
     def validate_date(str_date: str | Any) -> date | None:
+        """Если можем преобразуем дату к единому формату, если нет записываем NULL"""
         date_format = "%d.%m.%Y"
         try:
             return datetime.strptime(str_date, date_format).date()
@@ -110,33 +113,42 @@ class LineSheet(Model):
 
     @staticmethod
     def validate_time(str_time: str | Any) -> time | None:
+        """Если можем преобразуем время к текущему формату, если нет записываем NULL"""
         time_format = "%H:%M:%S"
         try:
             return datetime.strptime(str_time, time_format).time()
         except Exception as error:
             return None
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
+        """Два объекта равны, если равны их time_tag"""
         if self.time_tag == other.time_tag:
             return True
         return False
 
     def validate(self) -> bool:
-        if DEBUG:
-            self.school = "№10 (уд. Анны Ахматовой, д.18) - школа"
-        if self.equal() and self.validate_school():
+        """Если time_tag последнего и текущего не равны
+        и текущая школа валидная"""
+        # if DEBUG:
+        #     self.school = "№10 (уд. Анны Ахматовой, д.18) - школа"
+        if not self.not_equal():
+            """Если time_tag совпали возвращаем False и не идем проверять школу"""
+            return False
+        if self.validate_school():
             return True
         return False
 
-    def equal(self):
+    def not_equal(self) -> bool:
+        """Если текущая строка равна строке последней записанной строке"""
         if self != LineSheet.objects.last():
             return True
+        print("It is not a new time_tag")
         return False
 
-    def validate_school(self):
-        school_list = ["№10 (уд. Анны Ахматовой, д.18) - школа", "детский сад"]
+    def validate_school(self) -> bool:
+        """Если в текущей школе есть одно из school_list"""
 
-        def find(string, find_string):
+        def find(string: str, find_string: str) -> bool:
             if string.find(find_string) != -1:
                 return True
             return False
@@ -146,4 +158,5 @@ class LineSheet(Model):
         ]
         if any(find_school_list):
             return True
+        print("School is not validate")
         return False

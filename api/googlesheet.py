@@ -65,7 +65,6 @@ class GoogleSheet:
         raise ValueError("I have no data from Google Sheet")
 
     def make_typing_from_line(self, line: list[str]) -> LineSheet:
-        line[8] = "qwdqwd"
         line_typing = LineSheet(
             time_tag=line[0],
             school=line[2],
