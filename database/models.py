@@ -9,7 +9,7 @@ from datetime import (
     date,
 )
 
-blank = ""
+DEBUG = True
 
 init_django()
 
@@ -93,7 +93,7 @@ class LineSheet(Model):
         super(LineSheet, self).save(*args, **kwargs)
         return self.id
 
-    def validate(self) -> None:
+    def full_clean(self) -> None:
         self.date_departure = LineSheet.validate_date(str_date=self.date_departure)
         self.date_arrival = LineSheet.validate_date(str_date=self.date_arrival)
         self.time_departure = LineSheet.validate_time(str_time=self.time_departure)
@@ -115,3 +115,35 @@ class LineSheet(Model):
             return datetime.strptime(str_time, time_format).time()
         except Exception as error:
             return None
+
+    def __eq__(self, other):
+        if self.time_tag == other.time_tag:
+            return True
+        return False
+
+    def validate(self) -> bool:
+        if DEBUG:
+            self.school = "№10 (уд. Анны Ахматовой, д.18) - школа"
+        if self.equal() and self.validate_school():
+            return True
+        return False
+
+    def equal(self):
+        if self != LineSheet.objects.last():
+            return True
+        return False
+
+    def validate_school(self):
+        school_list = ["№10 (уд. Анны Ахматовой, д.18) - школа", "детский сад"]
+
+        def find(string, find_string):
+            if string.find(find_string) != -1:
+                return True
+            return False
+
+        find_school_list = [
+            find(self.school, find_school) for find_school in school_list
+        ]
+        if any(find_school_list):
+            return True
+        return False
