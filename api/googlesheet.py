@@ -52,16 +52,20 @@ class GoogleSheet:
         except HttpError as err:
             print(err)
 
-    def get_for_number(self, line_number: int) -> list[list[str]]:
+    def get_for_number(self, line_number: int) -> LineSheet:
         """Возвращает строку из таблицы по табличному номеру,
         если такой строки нет возвращает последнюю строку,
         если данные из таблицы не получены вызывает ошибку"""
         if self._values:
             try:
-                return self.make_typing_from_line(line=self._values[line_number - 2])
+                self.last = self.make_typing_from_line(
+                    line=self._values[line_number - 2]
+                )
+                return self.last
             except IndexError as error:
                 print(error, f"No data for number {line_number}")
-            return self.make_typing_from_line(line=self._values[-1])
+            self.last = self.make_typing_from_line(line=self._values[-1])
+            return self.last
         raise ValueError("I have no data from Google Sheet")
 
     def make_typing_from_line(self, line: list[str]) -> LineSheet:

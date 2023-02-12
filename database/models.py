@@ -10,7 +10,10 @@ from datetime import (
 )
 
 DEBUG = True
-school_list = ["№10 (уд. Анны Ахматовой, д.18) - школа", "детский сад"]
+school_list = [
+    "№10 (уд. Анны Ахматовой, д.18) - школа",
+    "детский сад",
+]
 
 
 init_django()
@@ -96,14 +99,14 @@ class LineSheet(Model):
         return self.id
 
     def full_clean(self) -> None:
-        self.date_departure = LineSheet.validate_date(str_date=self.date_departure)
-        self.date_arrival = LineSheet.validate_date(str_date=self.date_arrival)
-        self.time_departure = LineSheet.validate_time(str_time=self.time_departure)
-        self.time_arrival = LineSheet.validate_time(str_time=self.time_arrival)
+        self.date_departure = LineSheet.validate_date(str_date=str(self.date_departure))
+        self.date_arrival = LineSheet.validate_date(str_date=str(self.date_arrival))
+        self.time_departure = LineSheet.validate_time(str_time=str(self.time_departure))
+        self.time_arrival = LineSheet.validate_time(str_time=str(self.time_arrival))
         return super().full_clean()
 
     @staticmethod
-    def validate_date(str_date: str | Any) -> date | None:
+    def validate_date(str_date: str) -> date | None:
         """Если можем преобразуем дату к единому формату, если нет записываем NULL"""
         date_format = "%d.%m.%Y"
         try:
@@ -112,7 +115,7 @@ class LineSheet(Model):
             return None
 
     @staticmethod
-    def validate_time(str_time: str | Any) -> time | None:
+    def validate_time(str_time: str) -> time | None:
         """Если можем преобразуем время к текущему формату, если нет записываем NULL"""
         time_format = "%H:%M:%S"
         try:
@@ -142,7 +145,9 @@ class LineSheet(Model):
         """Если текущая строка равна строке последней записанной строке"""
         if self != LineSheet.objects.last():
             return True
-        print("It is not a new time_tag")
+        print(
+            f"It is not a new time_tag:\nlast:{LineSheet.objects.last().time_tag}\nnow:{self.time_tag}"
+        )
         return False
 
     def validate_school(self) -> bool:
@@ -158,5 +163,8 @@ class LineSheet(Model):
         ]
         if any(find_school_list):
             return True
-        print("School is not validate")
+        print(f"School is not validate:{self.school}")
         return False
+
+    def print(self) -> None:
+        print(self.all())
