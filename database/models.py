@@ -9,10 +9,11 @@ from datetime import (
     date,
 )
 
-DEBUG = True
+DEBUG = False
 school_list = [
     "№10 (уд. Анны Ахматовой, д.18) - школа",
     "детский сад",
+    "№10 (ул. Анны Ахматовой, д.18) - школа",
 ]
 
 
@@ -38,7 +39,10 @@ class LineSheet(Model):
         verbose_name="Название мероприятия (в родительном падеже).  О посещении ....",
     )
     date_departure = models.DateField(
-        blank=True, null=True, verbose_name="Дата выезда", default=None
+        blank=True,
+        null=True,
+        verbose_name="Дата выезда",
+        default=None,
     )
     time_departure = models.TimeField(
         auto_now=False,
@@ -49,7 +53,10 @@ class LineSheet(Model):
         default=None,
     )
     date_arrival = models.DateField(
-        blank=True, null=True, verbose_name="Дата приезда", default=None
+        blank=True,
+        null=True,
+        verbose_name="Дата приезда",
+        default=None,
     )
     time_arrival = models.TimeField(
         auto_now=False,
@@ -79,9 +86,7 @@ class LineSheet(Model):
     plan = models.TextField(
         blank=True, verbose_name="Укажите план мероприятия (согласно пунктам)"
     )
-    email = models.EmailField(
-        max_length=254, blank=True, verbose_name="Адрес электронной почты"
-    )
+    email = models.TextField(blank=True, verbose_name="Адрес электронной почты")
     number = models.TextField(blank=True, verbose_name="Номер телефона для контакта")
 
     def __str__(self) -> str:
@@ -132,8 +137,8 @@ class LineSheet(Model):
     def validate(self) -> bool:
         """Если time_tag последнего и текущего не равны
         и текущая школа валидная"""
-        # if DEBUG:
-        #     self.school = "№10 (уд. Анны Ахматовой, д.18) - школа"
+        if DEBUG:
+            return True
         if not self.not_equal():
             """Если time_tag совпали возвращаем False и не идем проверять школу"""
             return False
@@ -150,16 +155,17 @@ class LineSheet(Model):
         )
         return False
 
+    @staticmethod
+    def find(string: str, find_string: str) -> bool:
+        if string.find(find_string) != -1:
+            return True
+        return False
+
     def validate_school(self) -> bool:
         """Если в текущей школе есть одно из school_list"""
 
-        def find(string: str, find_string: str) -> bool:
-            if string.find(find_string) != -1:
-                return True
-            return False
-
         find_school_list = [
-            find(self.school, find_school) for find_school in school_list
+            LineSheet.find(self.school, find_school) for find_school in school_list
         ]
         if any(find_school_list):
             return True

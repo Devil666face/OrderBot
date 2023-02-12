@@ -1,4 +1,17 @@
 from api.googlesheet import GoogleSheet
+from database.models import LineSheet
+from control.control import Control
+from control.parser import Parser
+from control.docx import Docx
+
+
+def render(last_line: LineSheet):
+    parser = Parser(data=last_line)
+    Docx(
+        template_name=Control(last_line=last_line).template_name,
+        context=parser.context,
+        doc_name=parser.doc_name,
+    )
 
 
 def last():
@@ -9,17 +22,16 @@ def last():
     if not validation:
         return
     last_line.save()
-    print(validation)
-    last_line.print()
+    render(last_line)
 
 
 def for_number(number: int):
     sheet = GoogleSheet()
-    last_line = sheet.get_for_number(line_number=1781)
-    last_line = sheet.last
+    last_line = sheet.get_for_number(line_number=number)
     last_line.full_clean()
-    last_line.print()
+    render(last_line)
 
 
 if __name__ == "__main__":
     last()
+    # for_number(number=190)
