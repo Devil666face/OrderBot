@@ -1,37 +1,14 @@
-from api.googlesheet import GoogleSheet
-from database.models import LineSheet
-from control.control import Control
-from control.parser import Parser
-from control.docx import Docx
+from bot.handlers import (
+    bot_poling,
+    task_send_document,
+)
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-
-def render(last_line: LineSheet):
-    parser = Parser(data=last_line)
-    Docx(
-        template_name=Control(last_line=last_line).template_name,
-        context=parser.context,
-        doc_name=parser.doc_name,
-    )
-
-
-def last():
-    sheet = GoogleSheet()
-    last_line = sheet.last
-    last_line.full_clean()
-    validation = last_line.validate()
-    if not validation:
-        return
-    last_line.save()
-    render(last_line)
-
-
-def for_number(number: int):
-    sheet = GoogleSheet()
-    last_line = sheet.get_for_number(line_number=number)
-    last_line.full_clean()
-    render(last_line)
-
+DEBUG = True
 
 if __name__ == "__main__":
-    last()
-    # for_number(number=190)
+    scheduler = AsyncIOScheduler()
+    # scheduler.add_job(task_send_document, "interval", minutes=5)
+    scheduler.add_job(task_send_document, "interval", seconds=10)
+    scheduler.start()
+    bot_poling()

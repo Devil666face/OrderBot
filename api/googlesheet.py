@@ -6,8 +6,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from database.models import LineSheet
 
-DEBUG_MODE = False
-
 
 class GoogleSheet:
     SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]

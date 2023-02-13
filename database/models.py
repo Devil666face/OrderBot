@@ -1,12 +1,14 @@
 from django.db import models
+from main import DEBUG
 from manage import init_django
 from datetime import (
     datetime,
     time,
     date,
 )
+from asgiref.sync import sync_to_async
+from typing import List
 
-DEBUG = True
 school_list = [
     "№10 (уд. Анны Ахматовой, д.18) - школа",
     "детский сад",
@@ -25,15 +27,68 @@ class Model(models.Model):
         abstract = True
 
 
+class User(Model):
+    tg_id = models.IntegerField(
+        null=False,
+        blank=False,
+        unique=True,
+    )
+    username = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        default=None,
+    )
+    allow_user = models.BooleanField(
+        null=False,
+        blank=False,
+        default=False,
+    )
+
+    @staticmethod
+    @sync_to_async
+    def is_have_user(tg_id: int, username: str) -> bool:
+        if not User.objects.filter(tg_id=tg_id).exists():
+            User.objects.create(
+                tg_id=tg_id,
+                username=username,
+            ).save()
+            return True
+        return False
+
+    @staticmethod
+    @sync_to_async
+    def is_allow_user(tg_id: int) -> bool:
+        return User.objects.get(tg_id=tg_id).allow_user
+
+    @staticmethod
+    @sync_to_async
+    def set_allow_user(tg_id: int) -> bool:
+        try:
+            obj = User.objects.get(tg_id=tg_id)
+            obj.allow_user = True
+            obj.save()
+            return True
+        except Exception as error:
+            print(error)
+            return False
+
+    @staticmethod
+    @sync_to_async
+    def get_all_allow_user_tg_id() -> List[int]:
+        return [obj.tg_id for obj in User.objects.filter(allow_user=True)]
+
+    def __str__(self):
+        return f"{self.tg_id}:{self.username}:{self.allow_user}"
+
+
 class LineSheet(Model):
     time_tag = models.TextField(blank=True, verbose_name="Отметка времени")
     school = models.TextField(blank=True, verbose_name="Образовательная площадка")
-    teacher = models.TextField(
-        blank=True, verbose_name="Ф.И.О. учителя/воспитателя (ПОЛНОСТЬЮ) *"
-    )
+    teacher = models.TextField(blank=True, verbose_name="Ф.И.О. учителя/воспитателя")
     event = models.TextField(
         blank=True,
-        verbose_name="Название мероприятия (в родительном падеже).  О посещении ....",
+        verbose_name="Название мероприятия",
     )
     date_departure = models.DateField(
         blank=True,
@@ -96,6 +151,7 @@ class LineSheet(Model):
                 result_line += f"{key}:{value}\n"
         return result_line
 
+    @sync_to_async
     def save(self, *args, **kwargs) -> int:
         super(LineSheet, self).save(*args, **kwargs)
         return self.id
