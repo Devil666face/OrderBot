@@ -1,5 +1,4 @@
 from django.db import models
-from main import DEBUG
 from manage import init_django
 from datetime import (
     datetime,
@@ -9,11 +8,20 @@ from datetime import (
 from asgiref.sync import sync_to_async
 from typing import List
 
+DEBUG = False
+
 school_list = [
     "№10 (уд. Анны Ахматовой, д.18) - школа",
     "детский сад",
     "№10 (ул. Анны Ахматовой, д.18) - школа",
 ]
+
+
+def strintdate(date, format: str = "%d.%m.%Y") -> int | None:
+    try:
+        return int(date.strftime(format))
+    except Exception as error:
+        return None
 
 
 init_django()
@@ -187,6 +195,7 @@ class LineSheet(Model):
             return True
         return False
 
+    @sync_to_async
     def validate(self) -> bool:
         """Если time_tag последнего и текущего не равны
         и текущая школа валидная"""
@@ -223,6 +232,11 @@ class LineSheet(Model):
         if any(find_school_list):
             return True
         print(f"School is not validate:{self.school}")
+        return False
+
+    def compare_month(self, month: int) -> bool:
+        if strintdate(date=self.date_departure, format="%m") == month:
+            return True
         return False
 
     def print(self) -> None:

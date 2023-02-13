@@ -3,6 +3,7 @@ from database.models import LineSheet
 from control.control import Control
 from control.parser import Parser
 from control.docx import Docx
+from control.month import MonthReport
 
 
 def render(last_line: LineSheet):
@@ -19,11 +20,26 @@ async def last():
     sheet = GoogleSheet()
     last_line = sheet.last
     last_line.full_clean()
-    validation = last_line.validate()
+    validation = await last_line.validate()
     if not validation:
         return
     await last_line.save()
     return render(last_line)
+
+
+async def month(month_number: int):
+    sheet = GoogleSheet()
+    all_values = sheet.typing_all()
+    line_list_for_order = list()
+    for line in all_values:
+        line.full_clean()
+        if not line.compare_month(month=month_number):
+            continue
+        if not line.validate_school():
+            continue
+        line_list_for_order.append(line)
+    file_name = MonthReport(month_number, line_list_for_order).file_name
+    print(file_name)
 
 
 def for_number(number: int) -> str:

@@ -1,4 +1,5 @@
 import os.path
+from typing import List
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -61,6 +62,12 @@ class GoogleSheet:
             self.last = self.make_typing_from_line(line=self._values[-1])
             return self.last
         raise ValueError("I have no data from Google Sheet")
+
+    def typing_all(self) -> List[LineSheet]:
+        all_typing_list = list()
+        for line in self._values:
+            all_typing_list.append(self.make_typing_from_line(line=line))
+        return all_typing_list
 
     def make_typing_from_line(self, line: list[str]) -> LineSheet:
         line_typing = LineSheet(

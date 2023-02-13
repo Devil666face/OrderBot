@@ -13,6 +13,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from document import (
     for_number,
     last,
+    month,
 )
 from bot.messages import *
 
@@ -92,6 +93,21 @@ async def get_number(message: types.Message, state: FSMContext):
         doc_name = for_number(int(message.text))
         await answer_document(tg_id=message.from_user.id, doc_name=doc_name)
         os.remove(doc_name)
+    else:
+        await answer(message, UNCORRECT_NUMBER)
+    await state.finish()
+
+
+@dp.message_handler(Text(equals=main_buttons["for_month"]))
+async def make_month_order(message: types.Message, state: FSMContext):
+    await answer(message, SEND_MONTH_NUMBER)
+    await Form.number_month.set()
+
+
+@dp.message_handler(state=Form.number_month)
+async def get_month(message: types.Message, state: FSMContext):
+    if str(message.text).isnumeric():
+        doc_name = await month(int(message.text))
     else:
         await answer(message, UNCORRECT_NUMBER)
     await state.finish()

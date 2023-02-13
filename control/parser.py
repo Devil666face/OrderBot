@@ -24,9 +24,9 @@ weekend_line = "выход на работу в выходной день"
 work_line = "командировку"
 
 
-def strfdate(date) -> str | None:
+def strfdate(date, format: str = "%d.%m.%Y") -> str | None:
     try:
-        return date.strftime("%d.%m.%Y")
+        return date.strftime(format)
     except Exception as error:
         return None
 
