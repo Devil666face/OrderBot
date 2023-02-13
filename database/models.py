@@ -1,7 +1,4 @@
-# from django.core.validators import validate_email
 from django.db import models
-
-from typing import Any, Literal
 from manage import init_django
 from datetime import (
     datetime,
@@ -9,7 +6,7 @@ from datetime import (
     date,
 )
 
-DEBUG = False
+DEBUG = True
 school_list = [
     "№10 (уд. Анны Ахматовой, д.18) - школа",
     "детский сад",
