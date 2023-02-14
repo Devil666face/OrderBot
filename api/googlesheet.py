@@ -9,24 +9,24 @@ from database.models import LineSheet
 
 
 class GoogleSheet:
-    SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-    SAMPLE_SPREADSHEET_ID = "18czznNPJKfFsAFNrAgL_Nvxgc_Lea4-ghwMNaHt-3aM"
-    SAMPLE_RANGE_NAME = "Ответы на форму (1)"
-
-    def __init__(self):
-        if os.path.exists("creeds/token.json"):
-            self.creds = Credentials.from_authorized_user_file(
-                "creeds/token.json", self.SCOPES
-            )
+    def __init__(
+        self,
+        path_to_token: str = "creeds/token.json",
+        SCOPES: List[str] = ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+        SAMPLE_SPREADSHEET_ID: str = "18czznNPJKfFsAFNrAgL_Nvxgc_Lea4-ghwMNaHt-3aM",
+        SAMPLE_RANGE_NAME: str = "Ответы на форму (1)",
+    ):
+        if os.path.exists(path_to_token):
+            self.creds = Credentials.from_authorized_user_file(path_to_token, SCOPES)
         if not self.creds or not self.creds.valid:
             if self.creds and self.creds.expired and self.creds.refresh_token:
                 self.creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    "creeds/credentials.json", self.SCOPES
+                    "creeds/credentials.json", SCOPES
                 )
                 self.creds = flow.run_local_server(port=8080)
-            with open("creeds/token.json", "w") as token:
+            with open(path_to_token, "w") as token:
                 token.write(self.creds.to_json())
 
         try:
@@ -35,13 +35,13 @@ class GoogleSheet:
             result = (
                 sheet.values()
                 .get(
-                    spreadsheetId=self.SAMPLE_SPREADSHEET_ID,
-                    range=self.SAMPLE_RANGE_NAME,
+                    spreadsheetId=SAMPLE_SPREADSHEET_ID,
+                    range=SAMPLE_RANGE_NAME,
                 )
                 .execute()
             )
             self._values = result.get("values", [])[1:]
-            if self._values:
+            if self._values and path_to_token:
                 self.last = self.make_typing_from_line(line=self._values[-1])
 
         except HttpError as err:

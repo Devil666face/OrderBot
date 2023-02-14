@@ -27,8 +27,14 @@ class RecordLine:
 
 
 class MonthReport:
-    def __init__(self, month_number: int, values_for_month: List[LineSheet]) -> None:
+    def __init__(
+        self,
+        month_number: int,
+        values_for_month: List[LineSheet],
+        teacher_list: List[str],
+    ) -> None:
         self.month = MonthReport.get_month_name(month_number)
+        self.teacher_list = teacher_list
         self.values_for_month: List[LineSheet] = values_for_month
         self.list_for_record_none_check: List[RecordLine] = self.make_data_for_table()
         self.file_name = self.write(data_for_record=self.list_for_record_none_check)

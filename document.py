@@ -38,7 +38,18 @@ async def month(month_number: int):
         if not line.validate_school():
             continue
         line_list_for_order.append(line)
-    file_name = MonthReport(month_number, line_list_for_order).file_name
+    teacher_list = GoogleSheet(
+        path_to_token="creeds/token_teacher.json",
+        SCOPES=["https://www.googleapis.com/auth/spreadsheets.readonly"],
+        SAMPLE_SPREADSHEET_ID="1JkBjOGajQ52_nGrWFqFCEB2fuVcmOOuQI6xaNyN3NHc",
+        SAMPLE_RANGE_NAME="здание 10 АА18",
+    )
+    print(teacher_list)
+    file_name = MonthReport(
+        month_number=month_number,
+        values_for_month=line_list_for_order,
+        teacher_list=teacher_list,
+    ).file_name
     return file_name
 
 
