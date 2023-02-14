@@ -1,4 +1,5 @@
 import os.path
+from datetime import datetime
 from typing import List
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -6,6 +7,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from database.models import LineSheet
+
+
+def strptime_date_tag(date_tag: str) -> datetime:
+    return datetime.strptime(date_tag, "%d.%m.%Y %H:%M:%S")
 
 
 class GoogleSheet:
@@ -53,7 +58,16 @@ class GoogleSheet:
             print(err)
 
     def last(self):
-        return self.make_typing_from_line(line=self._values[-1])
+        date_tag_dict = dict()
+        date_list = list()
+        for index, value in enumerate(self._values):
+            date_tag = strptime_date_tag(value[0])
+            date_tag_dict[date_tag] = index
+            date_list.append(date_tag)
+        date_list.sort(key=lambda x: x, reverse=False)
+        last = date_list[-1]
+        index_of_last = date_tag_dict[last]
+        return self.make_typing_from_line(line=self._values[index_of_last])
 
     def get_for_number(self, line_number: int) -> LineSheet:
         """Возвращает строку из таблицы по табличному номеру,
@@ -67,7 +81,7 @@ class GoogleSheet:
                 return self.last
             except IndexError as error:
                 print(error, f"No data for number {line_number}")
-            self.last = self.make_typing_from_line(line=self._values[-1])
+            self.last = self.last()
             return self.last
         raise ValueError("I have no data from Google Sheet")
 
