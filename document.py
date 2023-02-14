@@ -18,7 +18,7 @@ def render(last_line: LineSheet):
 
 async def last():
     sheet = GoogleSheet()
-    last_line = sheet.last
+    last_line = sheet.last()
     last_line.full_clean()
     validation = await last_line.validate()
     if not validation:
@@ -39,12 +39,11 @@ async def month(month_number: int):
             continue
         line_list_for_order.append(line)
     teacher_list = GoogleSheet(
-        path_to_token="creeds/token_teacher.json",
+        token="creds/token_teachers.json",
         SCOPES=["https://www.googleapis.com/auth/spreadsheets.readonly"],
         SAMPLE_SPREADSHEET_ID="1JkBjOGajQ52_nGrWFqFCEB2fuVcmOOuQI6xaNyN3NHc",
         SAMPLE_RANGE_NAME="здание 10 АА18",
-    )
-    print(teacher_list)
+    )._values
     file_name = MonthReport(
         month_number=month_number,
         values_for_month=line_list_for_order,
