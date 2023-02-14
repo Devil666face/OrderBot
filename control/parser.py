@@ -40,11 +40,14 @@ def strftime(time) -> str | None:
 
 
 def get_weekend(date) -> bool:
-    match date.strftime("%A"):
-        case "Sunday" | "Saturday":
-            return True
-        case _:
-            return False
+    try:
+        match date.strftime("%A"):
+            case "Sunday" | "Saturday":
+                return True
+            case _:
+                return False
+    except AttributeError as error:
+        return False
 
 
 class Parser:

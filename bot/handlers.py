@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+from functools import wraps
 from database.models import User
 from aiogram import types
 from bot.keyboard import (
@@ -17,14 +19,17 @@ from document import (
 )
 from bot.messages import *
 
+load_dotenv()
+TOKEN = os.getenv("TOKEN")
+ADMIN_ID = os.getenv("ADMIN_ID")
+
 
 bot = Bot(
-    token="6056904404:AAEK_1j9ebHlohoWuNSH0aKWY8Ri57GOEg4",
+    token=TOKEN,
     parse_mode="HTML",
 )
 dp = Dispatcher(bot, storage=MemoryStorage())
 keyboard = Keyboard()
-ADMIN_ID = "446545799"
 
 
 def bot_poling():
@@ -45,6 +50,10 @@ async def answer_document(tg_id: int, doc_name: str) -> None:
         print(error)
 
 
+async def answer_admin(message_text: str) -> None:
+    await bot.send_message(ADMIN_ID, message_text)
+
+
 async def task_send_document() -> None:
     doc_name = await last()
     if not doc_name:
@@ -52,6 +61,23 @@ async def task_send_document() -> None:
     for tg_id in await User.get_all_allow_user_tg_id():
         await answer_document(tg_id, doc_name)
     os.remove(doc_name)
+
+
+def login(func):
+    @wraps(func)
+    async def wrapper(message, *args, **kwargs):
+        if not await User.is_allow_user(tg_id=message.from_user.id):
+            await answer(
+                message, "У Вас недостаточно прав, запросите доступ у администратора"
+            )
+            await answer_admin(
+                f"Пользователь {message.from_user.id} {message.from_user.username} не смог получить доступ к действию."
+            )
+            return
+        result = await func(message, *args, **kwargs)
+        return result
+
+    return wrapper
 
 
 class Form(StatesGroup):
@@ -64,8 +90,15 @@ async def start(message: types.Message):
     tg_id = message.from_user.id
     if await User.is_have_user(tg_id, username=message.from_user.username):
         await answer(message, NEW_USER)
+        await answer_admin(
+            message_text=f"Новый пользователь {message.from_user.id} {message.from_user.username}"
+        )
     elif not await User.is_allow_user(tg_id):
         await answer(message, GET_PERMISSIONS)
+        await answer_admin(
+            message_text=f"Пользователь запрашивает права {message.from_user.id} {message.from_user.username}"
+        )
+
     else:
         await answer(message, ALL_PERMISSIONS)
 
@@ -82,12 +115,14 @@ async def allow(message: types.Message):
 
 
 @dp.message_handler(Text(equals=main_buttons["for_number"]))
+@login
 async def make_order_for_number(message: types.Message, state: FSMContext):
     await answer(message, SEND_NUMBER)
     await Form.number_line.set()
 
 
 @dp.message_handler(state=Form.number_line)
+@login
 async def get_number(message: types.Message, state: FSMContext):
     if str(message.text).isnumeric():
         doc_name = for_number(int(message.text))
@@ -99,12 +134,14 @@ async def get_number(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(Text(equals=main_buttons["for_month"]))
+@login
 async def make_month_order(message: types.Message, state: FSMContext):
     await answer(message, SEND_MONTH_NUMBER)
     await Form.number_month.set()
 
 
 @dp.message_handler(state=Form.number_month)
+@login
 async def get_month(message: types.Message, state: FSMContext):
     if str(message.text).isnumeric():
         doc_name = await month(int(message.text))
