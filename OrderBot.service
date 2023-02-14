@@ -1,0 +1,13 @@
+[Unit]
+Description=Order bot
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/OrderBot
+ExecStart=/var/www/OrderBot/venv/bin/python main.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
