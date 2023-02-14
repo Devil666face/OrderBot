@@ -39,7 +39,7 @@ async def month(month_number: int):
             continue
         line_list_for_order.append(line)
     file_name = MonthReport(month_number, line_list_for_order).file_name
-    print(file_name)
+    return file_name
 
 
 def for_number(number: int) -> str:

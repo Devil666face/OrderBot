@@ -3,6 +3,7 @@ from typing import (
     List,
     Dict,
     Any,
+    Literal,
 )
 from datetime import datetime
 from collections import Counter
@@ -154,7 +155,7 @@ class Parser:
             *make_other_teacher(mainteacher_line, otherteacher_line),
         ]
 
-    def make_student_list(self, data_in_one_cell: str):
+    def make_student_list(self, data_in_one_cell: str) -> List[Dict[Literal["cols"], List]]:
         def get_student_name(student_line: str) -> str | bool:
             splited_line = re.findall(r"\w+", student_line)
             length = len(splited_line)

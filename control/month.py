@@ -1,7 +1,12 @@
-import os
 import xlsxwriter
+from dataclasses import dataclass
 from fuzzywuzzy import fuzz
-from typing import List
+from typing import (
+    List,
+    Dict,
+    Literal,
+    Tuple,
+)
 from database.models import LineSheet
 from collections import Counter
 from control.parser import (
@@ -11,29 +16,25 @@ from control.parser import (
 )
 
 
+@dataclass
+class RecordLine:
+    teacher: str
+    is_class_teacher: bool
+    date_arrival: str
+    time_arrival: str
+    class_label: str
+    class_count: int
+
+
 class MonthReport:
     def __init__(self, month_number: int, values_for_month: List[LineSheet]) -> None:
-        self.month_number = month_number
+        self.month = MonthReport.get_month_name(month_number)
         self.values_for_month: List[LineSheet] = values_for_month
-        self.list_for_record_none_check = self.make_data_for_table()
-        self.classroom_teachers = self.get_classroom_teachers()
-        self.data_for_record = self.check_classroom_teachers(
-            values_for_record=self.list_for_record_none_check,
-            classroom_teachers=self.classroom_teachers,
-        )
-        self.file_name = self.write()
+        self.list_for_record_none_check: List[RecordLine] = self.make_data_for_table()
+        self.file_name = self.write(data_for_record=self.list_for_record_none_check)
 
-    def get_classroom_teachers(self):
-        classroom_teachers = list()
-        for line in self.values_for_month:
-            try:
-                if line.time_tag not in ["", "класс"]:
-                    classroom_teachers.append([line.time_tag, line.school])
-            except Exception as error:
-                pass
-        return classroom_teachers
-
-    def get_month_name(self, month_number: int) -> str:
+    @staticmethod
+    def get_month_name(month_number: int) -> str:
         month = {
             1: "январь",
             2: "февраль",
@@ -50,68 +51,60 @@ class MonthReport:
         }
         return month.get(month_number, str(month_number))
 
-    def write(self) -> str:
-        file_name = f"{self.get_month_name(self.month_number)}.xlsx"
+    def make_data_for_table(self) -> List[RecordLine]:
+        list_for_record_none_check: List[RecordLine] = list()
+        for line in self.values_for_month:
+            parser = Parser(data=line)
+            class_label, class_count = self.get_class(
+                parser.make_student_list(line.students)
+            )
+            list_for_record_none_check.append(
+                RecordLine(
+                    teacher=line.teacher,
+                    is_class_teacher=False,
+                    date_arrival=strfdate(line.date_arrival),
+                    time_arrival=strftime(line.time_arrival),
+                    class_label=class_label,
+                    class_count=class_count,
+                )
+            )
+        return list_for_record_none_check
+
+    def write(self, data_for_record: List[RecordLine]) -> str:
+        def convert_for_write(line: RecordLine) -> Tuple[str]:
+            is_class_teacher = "да" if line.is_class_teacher else "нет"
+            return (
+                line.teacher,
+                is_class_teacher,
+                line.date_arrival,
+                line.time_arrival,
+                line.class_label,
+                line.class_count,
+            )
+
+        file_name = f"{self.month}.xlsx"
         workbook = xlsxwriter.Workbook(file_name)
-        worksheet = workbook.add_worksheet(
-            name=f"{self.get_month_name(self.month_number)}"
-        )
-        for i, line in enumerate(self.data_for_record):
-            for j, cell in enumerate(line):
+        worksheet = workbook.add_worksheet(name=self.month)
+        for i, line in enumerate(data_for_record):
+            for j, cell in enumerate(convert_for_write(line)):
                 worksheet.write(i, j, cell)
         workbook.close()
         return file_name
 
-    def make_data_for_table(self):
-        list_for_record_none_check = list()
-        for line in self.values_for_month:
-            parser = Parser(data=line)
-            class_counter, class_count = self.get_class(
-                parser.make_student_list(line.students)
-            )
-            list_for_record_none_check.append(
-                [
-                    line.teacher,
-                    "нет",
-                    strfdate(line.date_arrival),
-                    strftime(line.time_arrival),
-                    class_counter,
-                    class_count,
-                ]
-            )
-        return list_for_record_none_check
-
-    def check_classroom_teachers(self, values_for_record, classroom_teachers):
-        def s(value):
-            return str(value).strip()
-
-        for index, line in enumerate(values_for_record):
-            teacher_list = line[0]
-            class_label = line[4]
-            for teacher in teacher_list.split(","):
-                for classroom_line in classroom_teachers:
-                    true_class_label = classroom_line[0]
-                    true_class_teacher = classroom_line[1]
-                    print((teacher), s(true_class_teacher))
-                    if s(teacher) == s(true_class_teacher):
-                        # Использую нечеткое сравнение. Порог истины 80%
-                        print(s(class_label), s(true_class_label))
-                        if fuzz.ratio(s(class_label), s(true_class_label)) >= 80:
-                            values_for_record[index][1] = "да"
-                            break
-                break
-        return values_for_record
-
-    def get_class(self, class_list):
-        def get_most_common(lable_list):
+    def get_class(
+        self, class_list: List[Dict[Literal["cols"], List]]
+    ) -> Tuple[str, int]:
+        def get_most_commot_class_label(class_label_list: List[str]) -> str:
             try:
-                return Counter(class_label).most_common(1)[0][0]
-            except Exception as ex:
+                return Counter(class_label_list).most_common(1)[0][0]
+            except Exception as error:
                 return "-"
 
-        class_label = list()
+        class_label_list = list()
         for line in class_list:
-            pupil = line.get("cols", None)
-            if pupil is not None:
-                class_label.append(str(pupil[2]).replace("обучающийся ", "").upper())
-        return get_most_common(class_label), len(class_list)
+            pupil_list = line.get("cols", None)
+            if pupil_list is None:
+                continue
+            class_label = str(pupil_list[2]).replace("обучающийся ", "").upper()
+            class_label_list.append(class_label)
+        return get_most_commot_class_label(class_label_list), len(class_label_list)

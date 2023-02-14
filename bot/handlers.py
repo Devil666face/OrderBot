@@ -108,6 +108,8 @@ async def make_month_order(message: types.Message, state: FSMContext):
 async def get_month(message: types.Message, state: FSMContext):
     if str(message.text).isnumeric():
         doc_name = await month(int(message.text))
+        await answer_document(tg_id=message.from_user.id, doc_name=doc_name)
+        os.remove(doc_name)
     else:
         await answer(message, UNCORRECT_NUMBER)
     await state.finish()
