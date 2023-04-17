@@ -18,8 +18,8 @@ class GoogleSheet:
         self,
         token="creds/token.json",
         SCOPES=["https://www.googleapis.com/auth/spreadsheets.readonly"],
-        SAMPLE_SPREADSHEET_ID="18czznNPJKfFsAFNrAgL_Nvxgc_Lea4-ghwMNaHt-3aM",
-        SAMPLE_RANGE_NAME="Ответы на форму (1)",
+        SAMPLE_SPREADSHEET_ID="1kyYUdJa6pJaswOPUnhCEMxwvyesR0gAreoAvySxj8vY",
+        SAMPLE_RANGE_NAME="База",
     ):
         self.token = token
         self.creds = None
@@ -51,6 +51,7 @@ class GoogleSheet:
                 .execute()
             )
             self._values = result.get("values", [])[1:]
+            print(self._values)
             # if self._values:
             #     self.last = self.make_typing_from_line(line=self._values[-1])
 
