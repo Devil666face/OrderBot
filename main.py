@@ -9,7 +9,6 @@ if __name__ == "__main__":
     # sheet = GoogleSheet()
     # last_line = sheet.last()
     # last_line.full_clean()
-    # print(last_line.all())
     scheduler = AsyncIOScheduler()
     scheduler.add_job(task_send_document, "interval", minutes=5)
     # scheduler.add_job(task_send_document, "interval", seconds=10)
