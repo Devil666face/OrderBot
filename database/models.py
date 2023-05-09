@@ -94,9 +94,9 @@ class LineSheet(Model):
     time_tag = models.TextField(blank=True, verbose_name="Отметка времени")
     school = models.TextField(blank=True, verbose_name="Образовательная площадка")
     teacher = models.TextField(blank=True, verbose_name="Ф.И.О. учителя/воспитателя")
-    event = models.TextField(
+    companion = models.TextField(
         blank=True,
-        verbose_name="Название мероприятия",
+        verbose_name="Сопровождающие (полностью Ф.И.О) ВНИМАНИЕ!!! Сопровождающими могут быть ТОЛЬКО сотрудники комплекса",
     )
     date_departure = models.DateField(
         blank=True,
@@ -126,28 +126,23 @@ class LineSheet(Model):
         verbose_name="Время приезда обратно",
         default=None,
     )
+    class_tag = models.TextField(blank=True, verbose_name="Номер и литера класса")
+    students_count = models.IntegerField(
+        blank=True, verbose_name="Количество обучающихся"
+    )
+    event = models.TextField(
+        blank=True,
+        verbose_name="Название мероприятия",
+    )
+    adress = models.TextField(blank=True, verbose_name="Адрес проведения мероприятия ")
     transport = models.TextField(
         blank=True,
         verbose_name="На каком виде транспорта Вы будете добираться до места проведения мероприятия",
-    )
-    adress = models.TextField(blank=True, verbose_name="Адрес проведения мероприятия ")
-    route = models.TextField(
-        blank=True,
-        verbose_name="Опишите маршрут движения (как и на чем будете добираться до места)",
     )
     students = models.TextField(
         blank=True,
         verbose_name="№, Ф.И.О. обучающихся, дата рождения, класс, ФИО и № телефона одного из родителей/законного представителя)",
     )
-    companion = models.TextField(
-        blank=True,
-        verbose_name="Сопровождающие (полностью Ф.И.О) ВНИМАНИЕ!!! Сопровождающими могут быть ТОЛЬКО сотрудники комплекса",
-    )
-    plan = models.TextField(
-        blank=True, verbose_name="Укажите план мероприятия (согласно пунктам)"
-    )
-    email = models.TextField(blank=True, verbose_name="Адрес электронной почты")
-    number = models.TextField(blank=True, verbose_name="Номер телефона для контакта")
 
     def __str__(self) -> str:
         return self.time_tag

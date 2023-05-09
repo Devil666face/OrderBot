@@ -60,8 +60,9 @@ class Parser:
             print(self.context)
 
     def get_variabels(self):
+        self.main_teacher = self.get_main_teacher(teacher=self.data.teacher)
         self.teacher_list = self.make_teacher_list(
-            self.data.teacher, self.data.companion
+            self.main_teacher, self.data.companion
         )
         self.student_list = self.make_student_list(self.data.students)
         self.second_teacher = self.get_second_teacher()
@@ -80,7 +81,7 @@ class Parser:
             "finishdate": strfdate(self.data.date_arrival),
             "finishtime": strftime(self.data.time_arrival),
             "tbl_contents": [*self.teacher_list, *self.student_list],
-            "mainteacher": Morph(self.data.teacher, "дательный").word,
+            "mainteacher": Morph(self.main_teacher, "дательный").word,
             "secondteacher": Morph(self.second_teacher, "дательный").word,
             "metoditer": self.metodier,
             "tutor": self.tutor,
@@ -91,6 +92,10 @@ class Parser:
             "typework": self.type_of_work,
             "paytypework": self.type_of_work.replace("выход на ", ""),
         }
+
+    def get_main_teacher(self, teacher: str) -> str:
+        word_list = teacher.strip().split()
+        return " ".join(word_list[0:3])
 
     def get_doc_name(self):
         return f"ОргПриказ - {self.data.teacher.split()[0]} {strfdate(self.data.date_departure)}.docx"
@@ -110,7 +115,12 @@ class Parser:
     def get_metoditier(self) -> str:
         number_list = []
         for classmate in self.student_list:
-            s = [int(s) for s in re.findall(r"-?\d+\.?\d*", classmate["cols"][2])]
+            s: List[int] = list()
+            for number in re.findall(r"-?\d+\.?\d*", classmate["cols"][2]):
+                try:
+                    s.append(int(number))
+                except:
+                    pass
             try:
                 number_list.append(s[0])
             except:
@@ -158,25 +168,17 @@ class Parser:
             *make_other_teacher(mainteacher_line, otherteacher_line),
         ]
 
-    def make_student_list(self, data_in_one_cell: str) -> List[Dict[Literal["cols"], List]]:
-        def get_student_name(student_line: str) -> str | bool:
-            splited_line = re.findall(r"\w+", student_line)
-            length = len(splited_line)
-            if length <= 5:
-                return False
-            if length == 11 or str(splited_line[4]).isnumeric():
-                return f"{splited_line[1]} {splited_line[2]} {splited_line[3]}"
-            # elif length > 11:
-            return f"{splited_line[1]} {splited_line[2]} {splited_line[3]} {splited_line[4]}"
+    def make_student_list(
+        self, data_in_one_cell: str
+    ) -> List[Dict[Literal["cols"], List]]:
+        def get_student_name(student_line: str) -> str:
+            splited_line = re.split(r"\d+", student_line, maxsplit=1)[1]
+            without_first_dot = re.split(r".", splited_line, maxsplit=1)[1]
+            return str(without_first_dot).strip()
 
         def get_student_classmate(student_line: str) -> str:
-            splited_line = re.findall(r"\w+", student_line)
-            if splited_line[7] == "обучающийся":
-                return splited_line[8]
-            elif len(splited_line) == 11 or str(splited_line[4]).isnumeric():
-                return splited_line[7]
-            # elif len(splited_line) > 11:
-            return splited_line[8]
+            line = student_line.split(",")[2]
+            return str(line).strip()
 
         student_list = list()
         number = 1

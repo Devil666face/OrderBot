@@ -51,7 +51,6 @@ class GoogleSheet:
                 .execute()
             )
             self._values = result.get("values", [])[1:]
-            print(self._values)
             # if self._values:
             #     self.last = self.make_typing_from_line(line=self._values[-1])
 
@@ -95,20 +94,19 @@ class GoogleSheet:
     def make_typing_from_line(self, line: list[str]) -> LineSheet:
         line_typing = LineSheet(
             time_tag=line[0],
-            school=line[2],
+            school=line[1],
             teacher=line[3],
-            event=line[4],
+            companion=line[4],
             date_departure=line[5],
             time_departure=line[6],
             date_arrival=line[7],
             time_arrival=line[8],
-            transport=line[9],
-            adress=line[10],
-            route=line[11],
-            students=line[12],
-            companion=line[13],
-            plan=line[14],
-            email=line[15],
-            number=line[16],
+            class_tag=line[9],
+            students_count=line[10],
+            event=line[11],
+            adress=line[12],
+            transport=line[14],
+            students=line[16],
         )
+        # route=line[15],
         return line_typing
