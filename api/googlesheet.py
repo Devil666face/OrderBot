@@ -51,6 +51,7 @@ class GoogleSheet:
                 .execute()
             )
             self._values = result.get("values", [])[1:]
+            # print(self._values)
             # if self._values:
             #     self.last = self.make_typing_from_line(line=self._values[-1])
 
