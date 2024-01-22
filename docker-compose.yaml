@@ -1,0 +1,13 @@
+version: "3"
+services:
+  orderbot:
+    container_name: orderbot
+    image: ghcr.io/devil666face/orderbot:main
+    environment:
+      APP_NAME: orderbot
+      TOKEN: $TOKEN
+      DB: $DB
+      ADMIN_ID: $ADMIN_ID
+    restart: always
+    volumes:
+      - /opt/docker/orderbot/db:/orderbot/db
