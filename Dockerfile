@@ -4,7 +4,7 @@ ENV TOKEN ${TOKEN}
 ENV DB ""
 ENV ADMIN_ID=446545799
 ENV DEPS "wget ca-certificates"
-ENV APP_NAME odrerbot
+ENV APP_NAME orderbot
 
 WORKDIR ${APP_NAME}
 
