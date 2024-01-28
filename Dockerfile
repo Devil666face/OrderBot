@@ -16,6 +16,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && rm --recursive --force /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    sed -i '/ru_RU.UTF-8/s/^# //g' /etc/locale.gen && \
     locale-gen
 ENV LANG en_US.UTF-8  
 ENV LANGUAGE en_US:en  
