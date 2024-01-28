@@ -126,9 +126,10 @@ async def make_order_for_number(message: types.Message, state: FSMContext):
 async def get_number(message: types.Message, state: FSMContext):
     if str(message.text).isnumeric():
         doc_name = for_number(int(message.text))
-        await answer_document(tg_id=message.from_user.id, doc_name=doc_name)
+        ok = await answer_document(tg_id=message.from_user.id, doc_name=doc_name)
         try:
-            os.remove(doc_name)
+            if ok:
+                os.remove(doc_name)
         except FileNotFoundError as err:
             print(err)
     else:
@@ -148,9 +149,10 @@ async def make_month_order(message: types.Message, state: FSMContext):
 async def get_month(message: types.Message, state: FSMContext):
     if str(message.text).isnumeric():
         doc_name = await month(int(message.text))
-        await answer_document(tg_id=message.from_user.id, doc_name=doc_name)
+        ok = await answer_document(tg_id=message.from_user.id, doc_name=doc_name)
         try:
-            os.remove(doc_name)
+            if ok:
+                os.remove(doc_name)
         except FileNotFoundError as err:
             print(err)
     else:
