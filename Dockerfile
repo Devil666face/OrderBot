@@ -1,4 +1,5 @@
-FROM python:3.10-bookworm
+# FROM python:3.10-bookworm
+FROM python:3.10-slim-bullseye
 
 ENV TOKEN ${TOKEN}
 ENV DB ""
