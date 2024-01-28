@@ -127,7 +127,10 @@ async def get_number(message: types.Message, state: FSMContext):
     if str(message.text).isnumeric():
         doc_name = for_number(int(message.text))
         await answer_document(tg_id=message.from_user.id, doc_name=doc_name)
-        os.remove(doc_name)
+        try:
+            os.remove(doc_name)
+        except FileNotFoundError as err:
+            print(err)
     else:
         await answer(message, UNCORRECT_NUMBER)
     await state.finish()
@@ -146,7 +149,10 @@ async def get_month(message: types.Message, state: FSMContext):
     if str(message.text).isnumeric():
         doc_name = await month(int(message.text))
         await answer_document(tg_id=message.from_user.id, doc_name=doc_name)
-        os.remove(doc_name)
+        try:
+            os.remove(doc_name)
+        except FileNotFoundError as err:
+            print(err)
     else:
         await answer(message, UNCORRECT_NUMBER)
     await state.finish()
