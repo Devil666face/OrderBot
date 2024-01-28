@@ -3,7 +3,7 @@ FROM python:3.10-bookworm
 ENV TOKEN ${TOKEN}
 ENV DB ""
 ENV ADMIN_ID=446545799
-ENV DEPS "wget ca-certificates locale"
+ENV DEPS "wget ca-certificates locales"
 ENV APP_NAME orderbot
 
 RUN DEBIAN_FRONTEND=noninteractive \
