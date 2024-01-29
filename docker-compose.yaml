@@ -11,3 +11,4 @@ services:
     restart: always
     volumes:
       - /opt/docker/orderbot/db:/orderbot/db
+      - /opt/docker/orderbot/creds:/orderbot/creds
